@@ -1,18 +1,24 @@
 {
   "name": "gruxlolo-dev/sterslim",
   "type": "project",
-  "description": "PHP Starter Kit - lightweight framework skeleton",
+  "description": "PHP Starter Kit - lightweight framework skeleton with Docker and Attribute Routing",
   "license": "MIT",
   "require": {
     "php": "^8.2",
     "slim/slim": "^4.0",
     "slim/psr7": "^1.5",
     "vlucas/phpdotenv": "^5.5",
-    "illuminate/database": "^10.0"
+    "illuminate/database": "^10.0",
+    "mongodb/mongodb": "^1.16"
   },
   "autoload": {
     "psr-4": {
       "App\\": "src/"
     }
+  },
+  "scripts": {
+    "post-create-project-cmd": [
+      "bash installer/install.sh"
+    ]
   }
 }
