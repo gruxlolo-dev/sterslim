@@ -1,57 +1,107 @@
-# 🚀 sterslim v1.1.0
+# 🚀 Sterslim v1.3.0
 
-Advanced Lightweight PHP Starter Kit with Docker, Apache, and Attribute-based Routing.
+**Sterslim** is a high-performance, lightweight PHP Starter Kit built on top of the Slim 4 Framework. It provides a modern, "Laravel-like" developer experience with a fraction of the weight, featuring an interactive CLI, automated Docker environment, and attribute-based routing.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue.svg)](https://php.net)
 
 ---
 
-## 📦 Install
+## ✨ Key Features
+
+- **💻 Sterslim CLI**: A powerful command-line tool for scaffolding and project management.
+- **🛣️ Attribute Routing**: Define your routes directly in controllers using PHP 8 attributes.
+- **🐳 Dockerized**: Production-ready Apache + PHP 8.2 setup with automated `.env` and `docker-compose.yml` generation.
+- **🏗️ Smart Scaffolding**: Generate Controllers, Services, and Middlewares with one command.
+- **🗄️ Eloquent ORM**: Full support for MySQL, MariaDB, PostgreSQL, and MongoDB.
+- **🛡️ Secure by Default**: Hardened Apache configuration protecting your system files and serving only the `public/` directory.
+
+---
+
+## 📦 Installation
+
+Create a new project using Composer:
 
 ```bash
 composer create-project gruxlolo-dev/sterslim my-app
 ```
 
-The interactive installer will automatically start and guide you through the configuration.
+*Note: The interactive installer will start automatically to configure your database and Docker environment.*
 
 ---
 
-## ⚙️ Features
+## 🛠️ The Sterslim CLI
 
-- **Apache + PHP 8.2**: Optimized Docker setup.
-- **Interactive Installer**: Auto-generates `.env` and `docker-compose.yml`.
-- **Database Support**: MySQL, MariaDB, PostgreSQL, MongoDB.
-- **Attribute-based Routing**: Modern routing using PHP 8 attributes.
-- **Eloquent ORM**: Integrated via `illuminate/database`.
-- **Secure**: Apache is configured to serve only the `public/` directory.
+Manage your application with the built-in CLI tool:
+
+| Command | Description |
+| :--- | :--- |
+| `php sterslim create module [Name]` | Generates Controller, Service, and Middleware. |
+| `php sterslim create controller [Name]` | Generates a new API Controller. |
+| `php sterslim create service [Name]` | Generates a new Service class. |
+| `php sterslim create middleware [Name]` | Generates a new Middleware. |
+| `php sterslim list routes` | Lists all discovered routes and endpoints. |
+| `php sterslim install` | Re-runs the interactive installer. |
 
 ---
 
-## 🛠️ Usage
+## 🚀 Usage Guide
 
-### Creating Routes
-Simply create a controller in `src/Controllers/` and use the `#[Route]` attribute:
+### 1. Defining Routes
+Stop hunting through routing files. Define routes directly where they belong:
 
 ```php
 namespace App\Controllers;
 
 use App\Attributes\Route;
-use Psr\Http\Message\ResponseInterface as Response;
+use App\Middlewares\AuthMiddleware;
 
-class ExampleController {
-    #[Route(path: "/example", method: "GET")]
+class UserController {
+    #[Route(path: "/api/users", method: "GET", middleware: [AuthMiddleware::class])]
     public function index($request, $response) {
-        $response->getBody()->write("It works!");
-        return $response;
+        // Your logic here
+        return $response->withHeader('Content-Type', 'application/json');
     }
 }
 ```
 
-### Starting Docker
+### 2. Layered Architecture
+Generated modules follow a clean structure:
+- **Controllers**: Handle HTTP requests and JSON responses.
+- **Services**: Contain business logic and database interactions.
+- **Middlewares**: Handle cross-cutting concerns (Auth, Validation, CORS).
+
+### 3. Database & Docker
+Start your development environment with a single command:
+
 ```bash
 docker-compose up -d
 ```
-Your app will be available at `http://localhost:8080`.
+Access your application at `http://localhost:8080`.
+
+---
+
+## 📂 Project Structure
+
+```text
+├── bootstrap/          # App initialization & DB setup
+├── config/             # Configuration files
+├── installer/          # Interactive setup scripts
+├── public/             # Web server root (index.php, .htaccess)
+├── src/
+│   ├── Attributes/     # Custom PHP Attributes
+│   ├── Controllers/    # API Controllers
+│   ├── Middlewares/    # Application Middlewares
+│   ├── Routing/        # Route Discovery Engine
+│   └── Services/       # Business Logic / Services
+└── sterslim            # Main CLI Tool
+```
 
 ---
 
 ## 📜 License
-MIT
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+Developed with ❤️ by [gruxlolo-dev](https://github.com/gruxlolo-dev)
