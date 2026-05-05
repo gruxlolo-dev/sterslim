@@ -47,6 +47,11 @@ DB_USER=$DB_USER
 DB_PASS=$DB_PASS
 EOF
 
+if [ "$DB_TYPE" == "mongodb" ]; then
+    echo "Installing MongoDB library..."
+    composer require mongodb/mongodb --ignore-platform-reqs --quiet
+fi
+
 # Generate docker-compose.yml
 echo "Generating docker-compose.yml..."
 cat <<EOF > docker-compose.yml

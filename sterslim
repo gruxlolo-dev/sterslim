@@ -21,6 +21,7 @@ switch ($command) {
         else displayHelp();
         break;
     case 'install':
+        echo "Starting installer...\n";
         passthru("bash installer/install.sh");
         break;
     default:

@@ -8,8 +8,10 @@
     "slim/slim": "^4.0",
     "slim/psr7": "^1.5",
     "vlucas/phpdotenv": "^5.5",
-    "illuminate/database": "^10.0",
-    "mongodb/mongodb": "^1.16"
+    "illuminate/database": "^10.0"
+  },
+  "suggest": {
+    "mongodb/mongodb": "Required to use MongoDB with Eloquent (^1.16)"
   },
   "autoload": {
     "psr-4": {
