@@ -7,7 +7,7 @@ Lightweight PHP Starter Kit.
 ## 📦 Install
 
 ```bash
-composer create-project kacper5drub/sterslim my-app 
+composer create-project gruxlolo-dev/sterslim my-app --repository='{"type":"vcs","url":"https://github.com/gruxlolo-dev/sterslim"}' -s dev
 ```
 
 or manual:
