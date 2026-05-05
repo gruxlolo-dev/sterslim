@@ -8,34 +8,37 @@ use ReflectionClass;
 
 class RouteResolver
 {
-    public static function resolve(App $app, string $controllersPath): void
+    public static function resolve(App $app, string $basePath): void
     {
-        if (!is_dir($controllersPath)) return;
+        $paths = [
+            $basePath . '/Controllers',
+            $basePath . '/Routes'
+        ];
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersPath));
-        $files = new \RegexIterator($iterator, '/\.php$/');
+        foreach ($paths as $path) {
+            if (!is_dir($path)) continue;
 
-        foreach ($files as $file) {
-            $className = self::getClassNameFromFile($file->getPathname());
-            if (!$className || !class_exists($className)) {
-                continue;
-            }
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+            $files = new \RegexIterator($iterator, '/\.php$/');
 
-            $reflection = new ReflectionClass($className);
-            foreach ($reflection->getMethods() as $method) {
-                $attributes = $method->getAttributes(Route::class);
-                foreach ($attributes as $attribute) {
-                    $routeAttr = $attribute->newInstance();
-                    $slimRoute = $app->map([$routeAttr->method], $routeAttr->path, [$className, $method->getName()]);
-                    
-                    if ($routeAttr->name) {
-                        $slimRoute->setName($routeAttr->name);
-                    }
+            foreach ($files as $file) {
+                $className = self::getClassNameFromFile($file->getPathname());
+                if (!$className || !class_exists($className)) continue;
 
-                    // Register Route-specific Middleware
-                    foreach ($routeAttr->middleware as $middleware) {
-                        if (class_exists($middleware)) {
-                            $slimRoute->add(new $middleware());
+                $reflection = new ReflectionClass($className);
+                foreach ($reflection->getMethods() as $method) {
+                    foreach ($method->getAttributes(Route::class) as $attribute) {
+                        $routeAttr = $attribute->newInstance();
+                        $slimRoute = $app->map([$routeAttr->method], $routeAttr->path, [$className, $method->getName()]);
+                        
+                        if ($routeAttr->name) {
+                            $slimRoute->setName($routeAttr->name);
+                        }
+
+                        foreach ($routeAttr->middleware as $middleware) {
+                            if (class_exists($middleware)) {
+                                $slimRoute->add(new $middleware());
+                            }
                         }
                     }
                 }

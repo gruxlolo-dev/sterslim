@@ -29,13 +29,14 @@ switch ($command) {
 }
 
 function displayHelp() {
-    echo "Sterslim CLI v1.3.0\n";
+    echo "Sterslim CLI v1.3.1\n";
     echo "Usage: php sterslim [command] [subcommand] [name]\n\n";
     echo "Available commands:\n";
-    echo "  create module [Name]      Create Controller, Service and Middleware\n";
+    echo "  create module [Name]      Create Controller, Service, Middleware and Routes\n";
     echo "  create controller [Name]  Create a new Controller\n";
     echo "  create service [Name]     Create a new Service\n";
     echo "  create middleware [Name]  Create a new Middleware\n";
+    echo "  create routes [Name]      Create a new dedicated Routes file\n";
     echo "  list routes               Show all registered routes\n";
     echo "  install                   Run the interactive installer\n";
 }
@@ -50,18 +51,20 @@ function handleCreate($type, $name) {
     $lowerName = strtolower($name);
 
     $templates = [
-        'controller' => "<?php\n\nnamespace App\Controllers;\n\nuse App\Attributes\Route;\nuse App\Services\\{$name}Service;\nuse Psr\Http\Message\ResponseInterface as Response;\nuse Psr\Http\Message\ServerRequestInterface as Request;\n\nclass {$name}Controller\n{\n    private {$name}Service \$service;\n\n    public function __construct()\n    {\n        \$this->service = new {$name}Service();\n    }\n\n    #[Route(path: \"/api/{$lowerName}\", method: \"GET\")]\n    public function index(Request \$request, Response \$response): Response\n    {\n        \$data = \$this->service->all();\n        \$response->getBody()->write(json_encode(['status' => 'success', 'data' => \$data]));\n        return \$response->withHeader('Content-Type', 'application/json');\n    }\n}\n",
+        'controller' => "<?php\n\nnamespace App\Controllers;\n\nuse App\Services\\{$name}Service;\nuse Psr\Http\Message\ResponseInterface as Response;\nuse Psr\Http\Message\ServerRequestInterface as Request;\n\nclass {$name}Controller\n{\n    private {$name}Service \$service;\n\n    public function __construct()\n    {\n        \$this->service = new {$name}Service();\n    }\n\n    public function index(Request \$request, Response \$response): Response\n    {\n        \$data = \$this->service->all();\n        \$response->getBody()->write(json_encode(['status' => 'success', 'data' => \$data]));\n        return \$response->withHeader('Content-Type', 'application/json');\n    }\n}\n",
         'service' => "<?php\n\nnamespace App\Services;\n\nclass {$name}Service\n{\n    public function all(): array\n    {\n        return [['id' => 1, 'name' => 'Sample data']];\n    }\n}\n",
-        'middleware' => "<?php\n\nnamespace App\Middlewares;\n\nuse Psr\Http\Message\ServerRequestInterface as Request;\nuse Psr\Http\Server\RequestHandlerInterface as Handler;\nuse Psr\Http\Message\ResponseInterface as Response;\n\nclass {$name}Middleware\n{\n    public function __invoke(Request \$request, Handler \$handler): Response\n    {\n        return \$handler->handle(\$request);\n    }\n}\n"
+        'middleware' => "<?php\n\nnamespace App\Middlewares;\n\nuse Psr\Http\Message\ServerRequestInterface as Request;\nuse Psr\Http\Server\RequestHandlerInterface as Handler;\nuse Psr\Http\Message\ResponseInterface as Response;\n\nclass {$name}Middleware\n{\n    public function __invoke(Request \$request, Handler \$handler): Response\n    {\n        return \$handler->handle(\$request);\n    }\n}\n",
+        'routes' => "<?php\n\nnamespace App\Routes;\n\nuse App\Attributes\Route;\nuse App\Controllers\\{$name}Controller;\n\nclass {$name}Routes\n{\n    #[Route(path: \"/api/{$lowerName}\", method: \"GET\")]\n    public function mapIndex(\$request, \$response) {\n        return (new {$name}Controller())->index(\$request, \$response);\n    }\n}\n"
     ];
 
     if ($type === 'module') {
         saveFile("src/Controllers/{$name}Controller.php", $templates['controller']);
         saveFile("src/Services/{$name}Service.php", $templates['service']);
         saveFile("src/Middlewares/{$name}Middleware.php", $templates['middleware']);
+        saveFile("src/Routes/{$name}Routes.php", $templates['routes']);
     } elseif (isset($templates[$type])) {
-        $folder = ucfirst($type) . "s";
-        saveFile("src/{$folder}/{$name}" . ucfirst($type) . ".php", $templates[$type]);
+        $folder = ucfirst($type);
+        saveFile("src/{$folder}/{$name}" . ($type === 'routes' ? 'Routes' : ucfirst($type)) . ".php", $templates[$type]);
     } else {
         echo "Unknown type: $type\n";
     }
@@ -80,22 +83,27 @@ function handleListRoutes() {
     echo sprintf("%-8s | %-20s | %s\n", "Method", "Path", "Controller::Action");
     echo str_repeat("-", 60) . "\n";
 
-    $controllersPath = __DIR__ . '/src/Controllers';
-    $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersPath));
-    $files = new \RegexIterator($iterator, '/\.php$/');
+    $basePath = __DIR__ . '/src';
+    $paths = [$basePath . '/Controllers', $basePath . '/Routes'];
 
-    foreach ($files as $file) {
-        $content = file_get_contents($file->getPathname());
-        if (preg_match('/namespace\s+(.+?);/', $content, $namespaceMatches) &&
-            preg_match('/class\s+(.+?)\s+/', $content, $classMatches)) {
-            $className = $namespaceMatches[1] . '\\' . $classMatches[1];
-            if (!class_exists($className)) continue;
+    foreach ($paths as $path) {
+        if (!is_dir($path)) continue;
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+        $files = new \RegexIterator($iterator, '/\.php$/');
 
-            $reflection = new ReflectionClass($className);
-            foreach ($reflection->getMethods() as $method) {
-                foreach ($method->getAttributes(\App\Attributes\Route::class) as $attr) {
-                    $r = $attr->newInstance();
-                    echo sprintf("%-8s | %-20s | %s::%s\n", $r->method, $r->path, $classMatches[1], $method->getName());
+        foreach ($files as $file) {
+            $content = file_get_contents($file->getPathname());
+            if (preg_match('/namespace\s+(.+?);/', $content, $namespaceMatches) &&
+                preg_match('/class\s+(.+?)\s+/', $content, $classMatches)) {
+                $className = $namespaceMatches[1] . '\\' . $classMatches[1];
+                if (!class_exists($className)) continue;
+
+                $reflection = new ReflectionClass($className);
+                foreach ($reflection->getMethods() as $method) {
+                    foreach ($method->getAttributes(\App\Attributes\Route::class) as $attr) {
+                        $r = $attr->newInstance();
+                        echo sprintf("%-8s | %-20s | %s::%s\n", $r->method, $r->path, $classMatches[1], $method->getName());
+                    }
                 }
             }
         }
