@@ -10,6 +10,8 @@ class RouteResolver
 {
     public static function resolve(App $app, string $controllersPath): void
     {
+        if (!is_dir($controllersPath)) return;
+
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersPath));
         $files = new \RegexIterator($iterator, '/\.php$/');
 
@@ -28,6 +30,13 @@ class RouteResolver
                     
                     if ($routeAttr->name) {
                         $slimRoute->setName($routeAttr->name);
+                    }
+
+                    // Register Route-specific Middleware
+                    foreach ($routeAttr->middleware as $middleware) {
+                        if (class_exists($middleware)) {
+                            $slimRoute->add(new $middleware());
+                        }
                     }
                 }
             }

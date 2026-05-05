@@ -29,8 +29,6 @@ $config = [
 ];
 
 if ($dbType === 'mongodb') {
-    // MongoDB configuration for Eloquent (requires mongodb/laravel-mongodb or manual setup)
-    // For now, we provide the basic config structure
     $config['driver'] = 'mongodb';
 }
 
@@ -40,10 +38,15 @@ $capsule->bootEloquent();
 
 $app = AppFactory::create();
 
-// Register Attribute-based Routes
+// Global Middleware
+$app->addBodyParsingMiddleware();
+$app->addRoutingMiddleware();
+$app->addErrorMiddleware(true, true, true);
+
+// Register Attribute-based Routes (with Middleware support)
 RouteResolver::resolve($app, __DIR__ . '/../src/Controllers');
 
-// Fallback to manual routes if needed
+// Fallback to manual routes
 if (file_exists(__DIR__ . '/../routes/web.php')) {
     (require __DIR__ . '/../routes/web.php')($app);
 }

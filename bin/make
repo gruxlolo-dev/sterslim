@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php
+
+if ($argc < 3) {
+    echo "Usage: bin/make [controller|service|middleware|module] [Name]\n";
+    exit(1);
+}
+
+$type = strtolower($argv[1]);
+$name = ucfirst($argv[2]);
+
+function create_file($path, $content) {
+    $dir = dirname($path);
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    file_put_contents($path, $content);
+    echo "CREATED: $path\n";
+}
+
+$templates = [
+    'controller' => "<?php\n\nnamespace App\Controllers;\n\nuse App\Attributes\Route;\nuse Psr\Http\Message\ResponseInterface as Response;\nuse Psr\Http\Message\ServerRequestInterface as Request;\n\nclass {$name}Controller\n{\n    #[Route(path: \"/" . strtolower($name) . "\", method: \"GET\")]\n    public function index(Request \$request, Response \$response): Response\n    {\n        \$response->getBody()->write(\"{$name} Controller\");\n        return \$response;\n    }\n}\n",
+    'service' => "<?php\n\nnamespace App\Services;\n\nclass {$name}Service\n{\n    public function execute()\n    {\n        return \"{$name} Service logic\";\n    }\n}\n",
+    'middleware' => "<?php\n\nnamespace App\Middlewares;\n\nuse Psr\Http\Message\ServerRequestInterface as Request;\nuse Psr\Http\Server\RequestHandlerInterface as Handler;\nuse Psr\Http\Message\ResponseInterface as Response;\n\nclass {$name}Middleware\n{\n    public function __invoke(Request \$request, Handler \$handler): Response\n    {\n        // Before logic\n        \$response = \$handler->handle(\$request);\n        // After logic\n        return \$slimResponse = \$response;\n    }\n}\n"
+];
+
+if ($type === 'module') {
+    create_file("src/Controllers/{$name}Controller.php", $templates['controller']);
+    create_file("src/Services/{$name}Service.php", $templates['service']);
+    create_file("src/Middlewares/{$name}Middleware.php", $templates['middleware']);
+} elseif (isset($templates[$type])) {
+    $fileName = ($type === 'controller') ? "{$name}Controller.php" : (($type === 'service') ? "{$name}Service.php" : "{$name}Middleware.php");
+    $folder = ($type === 'controller') ? "Controllers" : (($type === 'service') ? "Services" : "Middlewares");
+    create_file("src/{$folder}/{$fileName}", $templates[$type]);
+} else {
+    echo "Unknown type: $type\n";
+}
