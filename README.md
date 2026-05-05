@@ -7,7 +7,7 @@ Lightweight PHP Starter Kit.
 ## 📦 Install
 
 ```bash
-composer create-project kacper5drub/sterslim my-app // i add it later
+composer create-project kacper5drub/sterslim my-app 
 ```
 
 or manual:
