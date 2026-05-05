@@ -29,6 +29,9 @@ bash installer/install.sh
 
 ---
 
+## 📜 Description
+Sterslim is an open-source PHP starter kit built on Slim framework. It provides a ready-to-use project structure, Docker configuration, and modern development tools to quickly bootstrap scalable PHP applications. 
+
 ## 📜 License
 
 MIT
