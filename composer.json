@@ -1,0 +1,18 @@
+{
+  "name": "kacper5drub/sterslim",
+  "type": "project",
+  "description": "PHP Starter Kit - lightweight framework skeleton",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "slim/slim": "^4.0",
+    "slim/psr7": "^1.5",
+    "vlucas/phpdotenv": "^5.5",
+    "illuminate/database": "^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
