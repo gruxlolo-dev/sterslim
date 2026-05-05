@@ -22,7 +22,7 @@ switch ($command) {
         break;
     case 'install':
         echo "Starting installer...\n";
-        passthru("bash installer/install.sh");
+        passthru("bash .installer/install.sh");
         break;
     default:
         displayHelp();
@@ -30,7 +30,7 @@ switch ($command) {
 }
 
 function displayHelp() {
-    echo "Sterslim CLI v1.3.1\n";
+    echo "Sterslim CLI v1.0.0\n";
     echo "Usage: php sterslim [command] [subcommand] [name]\n\n";
     echo "Available commands:\n";
     echo "  create module [Name]      Create Controller, Service, Middleware and Routes\n";

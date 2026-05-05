@@ -1,4 +1,4 @@
-# 🚀 Sterslim v1.3.0
+# 🚀 Sterslim v1.0.0
 
 **Sterslim** is a high-performance, lightweight PHP Starter Kit built on top of the Slim 4 Framework. It provides a modern, "Laravel-like" developer experience with a fraction of the weight, featuring an interactive CLI, automated Docker environment, and attribute-based routing.
 

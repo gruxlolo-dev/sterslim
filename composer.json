@@ -20,7 +20,7 @@
   },
   "scripts": {
     "post-create-project-cmd": [
-      "bash installer/install.sh"
+      "bash .installer/install.sh"
     ]
   }
 }

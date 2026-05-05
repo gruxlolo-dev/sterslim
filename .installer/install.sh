@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Welcome to Sterslim v1.1.0 Installer${NC}"
+echo -e "${BLUE}🚀 Welcome to Sterslim v1.0.0 Installer${NC}"
 
 # Project Name
 read -p "Enter Project Name [my-app]: " APP_NAME
@@ -59,7 +59,9 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: .docker/Dockerfile
     ports:
       - "8080:80"
     volumes:
